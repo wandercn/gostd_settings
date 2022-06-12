@@ -1,7 +1,7 @@
 [package]
 name = "gostd_settings"
 license = "MIT"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2018"
 authors = ["wandercn<wander@ffactory.org>"]
 description = "gostd_settings is library for reading and writing properties files. 是一个用于读写属性配置文件的库"

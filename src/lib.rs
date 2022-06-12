@@ -93,11 +93,11 @@ pub trait Settings {
     ///
     ///     p.load_from_file(file)?;
     ///
-    ///     if let Some(httpProt) = p.property("HttpPort") {
-    ///         println!("{}", httpProt)
+    ///     if let Some(http_prot) = p.property("HttpPort") {
+    ///         println!("{}", http_prot)
     ///     }
-    ///     if let Some(logLevel) = p.property_slice("LogLevel") {
-    ///         println!("{:?}", logLevel)
+    ///     if let Some(log_level) = p.property_slice("LogLevel") {
+    ///         println!("{:?}", log_level)
     ///     }
     ///     Ok(())
     /// }

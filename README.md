@@ -50,11 +50,11 @@ fn main() -> Result<(), std::io::Error> {
 
     p.load_from_file(file)?;
 
-    if let Some(httpProt) = p.property("HttpPort") {
-        println!("{}", httpProt)
+    if let Some(http_prot) = p.property("HttpPort") {
+        println!("{}", http_prot)
     }
     if let Some(logLevel) = p.property_slice("LogLevel") {
-        println!("{:?}", logLevel)
+        println!("{:?}", log_level)
     }
     Ok(())
 }
