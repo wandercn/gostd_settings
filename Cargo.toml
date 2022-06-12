@@ -8,7 +8,7 @@ description = "gostd_settings is library for reading and writing properties file
 homepage = "https://github.com/wandercn/gostd_settings"
 repository = "https://github.com/wandercn/gostd_settings"
 keywords = ["settings","gostd","config","ini","conf"]
-categories= ["config","settings","accessibility","development-tools","http","web"]
+categories= ["config","settings","accessibility","development-tools"]
 
 [profile.dev]
 opt-level = 0
