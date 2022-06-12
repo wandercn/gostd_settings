@@ -1,3 +1,4 @@
+#![doc(html_playground_url = "https://play.rust-lang.org/")]
 //! gostd_settings is a library for reading and writing property files. gostd_settings can be saved in or loaded from the stream. Each key and its corresponding value in the attribute list is a string. It is thread safe: multiple threads can share a single gostd_ Settings object without external synchronization.
 //! <details class="rustdoc-toggle top-doc">
 //! <summary class="docblock">zh-cn</summary>
@@ -15,7 +16,7 @@
 //!    );
 //!    p.set_property_slice(
 //!        "LogLevel",
-//!        ["Debug".to_owned(), "Info".to_owned(), "Warn".to_owned()].to_vec(),
+//!        ["Debug", "Info", "Warn"].iter().map(|s| s.to_string()).collect(),
 //!    );
 //!    match p.store_to_file("config.properties") {
 //!        Ok(()) => println!("store to file app.conf success"),
@@ -23,26 +24,59 @@
 //!    }
 //! ```
 //! # Output
-//! ```
+//! ```text
 //! $ cat config.properties
 //! HttpPort = 8081
 //! LogLevel = Debug,Info,Warn
 //! MongoServer = mongodb://10.11.1.5,10.11.1.6,10.11.1.7/?replicaSet=mytest
 //! ```
-use gostd::builtin::*;
+#![allow(unused)]
+#![allow(non_upper_case_globals)]
+#![allow(non_snake_case)]
+#![allow(non_camel_case_types)]
 use gostd::bytes::Buffer;
 use gostd::io::{ByteWriter, StringWriter};
 use gostd::strings;
 use std::collections::HashMap;
-use std::io::{BufRead, Error, Read, Write};
+use std::fs;
+use std::io::{BufRead, BufReader, Error, Read, Write};
 use std::sync::Mutex;
-use std::{fs, os};
 
+/// Summary of read and write methods for management configuration files
+/// <details class="rustdoc-toggle top-doc">
+/// <summary class="docblock">zh-cn</summary>
+/// 管理配置文件的读写方法汇总
+/// </details>
 pub trait Settings {
+    /// Searches for the property with the specified key in this property list.
+    /// <details class="rustdoc-toggle top-doc">
+    /// <summary class="docblock">zh-cn</summary>
+    /// 用指定的键在此属性列表中搜索属性。
+    /// </details>
     fn property(&self, key: &str) -> Option<String>;
+    /// Search for attributes in this attribute list using the specified key to return multiple attributes connected by "," converted to slices.
+    /// <details class="rustdoc-toggle top-doc">
+    /// <summary class="docblock">zh-cn</summary>
+    /// 用指定的键在此属性列表中搜索属性，把","连接的多个属性转换为切片返回。
+    /// </details>
     fn property_slice(&self, key: &str) -> Option<Vec<String>>;
+    /// Set multiple attributes for the specified key, converting multiple attribute values into a "," concatenated attribute string.
+    /// <details class="rustdoc-toggle top-doc">
+    /// <summary class="docblock">zh-cn</summary>
+    /// 为指定的键设置多个属性，把多个属性值转换成“，”连接的属性字符串。
+    /// </details>
     fn set_property_slice(&mut self, key: &str, value: Vec<String>);
+    /// Update the specified key and properties. If the key does not exist, create a new one.
+    /// <details class="rustdoc-toggle top-doc">
+    /// <summary class="docblock">zh-cn</summary>
+    /// 更新指定的键和属性,如果键不存在就新建。
+    /// </details>
     fn set_property(&mut self, key: &str, value: &str);
+    /// Reads a property list (key and element pairs) from the input character stream in a simple line-oriented format.
+    /// <details class="rustdoc-toggle top-doc">
+    /// <summary class="docblock">zh-cn</summary>
+    /// 从输入流读取属性列表。
+    /// </details>
     fn load(&mut self, r: impl Read) -> Result<(), Error>;
     /// Reads a property list from a file
     /// <details class="rustdoc-toggle top-doc">
@@ -52,16 +86,74 @@ pub trait Settings {
     ///
     /// # Example
     /// ```
-    ///    use gostd_settings::{Settings, builder};
-    ///    let mut p = builder().file_type_properties().build();
+    /// use gostd_settings::{builder, Settings};
+    /// fn main() -> Result<(), std::io::Error> {
+    ///     let file = "./config.properties";
+    ///     let mut p = builder().file_type_properties().build();
+    ///
+    ///     p.load_from_file(file)?;
+    ///
+    ///     if let Some(httpProt) = p.property("HttpPort") {
+    ///         println!("{}", httpProt)
+    ///     }
+    ///     if let Some(logLevel) = p.property_slice("LogLevel") {
+    ///         println!("{:?}", logLevel)
+    ///     }
+    ///     Ok(())
+    /// }
+    /// ```
+    ///
+    /// # Output
+    ///
+    /// ```text
+    /// 8081
+    /// ["Debug", "Info", "Warn"]
     /// ```
     fn load_from_file(&mut self, file_path: &str) -> Result<(), Error>;
+    /// Writes this property list (key and element pairs) in this Properties table to the output stream in a format suitable for loading into a Properties table using the Load() method.
+    /// <details class="rustdoc-toggle top-doc">
+    /// <summary class="docblock">zh-cn</summary>
+    /// 将属性列表写入输出流。
+    /// </details>
     fn store(&self, w: impl Write) -> Result<(), Error>;
+    /// Writes a list of property to a file.
+    /// <details class="rustdoc-toggle top-doc">
+    /// <summary class="docblock">zh-cn</summary>
+    /// 将属性列表写入文件。
+    /// </details>
+    ///
+    /// # Example
+    /// ```
+    ///    use gostd_settings::{Settings, builder};
+    ///    let mut p = builder().file_type_properties().build();
+    ///    p.set_property("HttpPort", "8081");
+    ///    p.set_property(
+    ///        "MongoServer",
+    ///        "mongodb://10.11.1.5,10.11.1.6,10.11.1.7/?replicaSet=mytest",
+    ///    );
+    ///    p.set_property_slice(
+    ///        "LogLevel",
+    ///        ["Debug", "Info", "Warn"].iter().map(|s| s.to_string()).collect(),
+    ///    );
+    ///    match p.store_to_file("config.properties") {
+    ///        Ok(()) => println!("store to file app.conf success"),
+    ///        Err(err) => println!("store to file app.conf failed: {}", err),
+    ///    }
+    /// ```
+    /// # Output
+    /// ```text
+    /// $ cat config.properties
+    /// HttpPort = 8081
+    /// LogLevel = Debug,Info,Warn
+    /// MongoServer = mongodb://10.11.1.5,10.11.1.6,10.11.1.7/?replicaSet=mytest
+    /// ```
     fn store_to_file(&self, file_path: &str) -> Result<(), Error>;
-    // fn line(key: &str, value: &str, buf: &mut Buffer);
-    // fn parse_line(&mut self, line: &str);
+    /// Returns an enumeration of all keys in the property list.
+    /// <details class="rustdoc-toggle top-doc">
+    /// <summary class="docblock">zh-cn</summary>
+    /// 返回属性列表中所有键的枚举。
+    /// </details>
     fn property_names(&self) -> Vec<String>;
-    // fn is_comment_line(line: &str) -> bool;
 }
 
 pub fn builder() -> SettingsBuilder {
@@ -70,12 +162,7 @@ pub fn builder() -> SettingsBuilder {
 
 #[derive(Default)]
 struct Properties {
-    object: Mutex<HashMap<String, Value>>,
-}
-
-enum Value {
-    V(String),
-    Map(HashMap<String, String>),
+    object: Mutex<HashMap<String, String>>,
 }
 
 pub struct SettingsBuilder {
@@ -103,7 +190,6 @@ impl Properties {
     }
 
     fn parse_line(&mut self, line: &str) {
-        print!("lineStr: {}", line);
         let line_str = strings::TrimSpace(line);
         if Self::is_comment_line(line_str) {
             return;
@@ -111,7 +197,6 @@ impl Properties {
         let split_strs = strings::Split(line_str, "=");
         let key = strings::TrimSpace(split_strs[0]);
         let value = strings::TrimSpace(split_strs[1]);
-        println!("value: {}", value);
         self.set_property(key, value);
     }
 
@@ -162,21 +247,19 @@ impl Settings for Properties {
     }
 
     fn load(&mut self, r: impl Read) -> Result<(), Error> {
-        let mut br = std::io::BufReader::new(r);
+        let mut br = BufReader::new(r);
         let mut line = String::new();
         loop {
-            if let Ok(i) = br.read_line(&mut line) {
-                if i == 0 {
-                    break;
-                } else {
-                    self.parse_line(&line);
-                    line.clear();
+            match br.read_line(&mut line) {
+                Ok(i) => {
+                    if i == 0 {
+                        break;
+                    } else {
+                        self.parse_line(&line);
+                        line.clear();
+                    }
                 }
-            } else {
-                return Err(std::io::Error::new(
-                    std::io::ErrorKind::Other,
-                    "read_line failed",
-                ));
+                Err(err) => return Err(err),
             }
         }
         Ok(())

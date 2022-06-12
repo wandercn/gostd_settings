@@ -1,9 +1,21 @@
 [package]
 name = "gostd_settings"
+license = "MIT"
 version = "0.1.0"
 edition = "2018"
+authors = ["wandercn<wander@ffactory.org>"]
+description = "gostd_settings is library for reading and writing properties files. 是一个用于读写属性配置文件的库"
+homepage = "https://github.com/wandercn/gostd_settings"
+repository = "https://github.com/wandercn/gostd_settings"
+keywords = ["settings","gostd","config","ini","conf"]
+categories= ["config","settings","accessibility","development-tools","http","web"]
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[profile.dev]
+opt-level = 0
+
+[profile.release]
+
+opt-level = 3
 
 [dependencies]
 gostd = "0.3.7"
