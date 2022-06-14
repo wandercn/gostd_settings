@@ -216,22 +216,22 @@ impl Properties {
 
 impl Settings for Properties {
     fn property(&self, key: &str) -> Option<String> {
-        match self.object.lock().unwrap().get(key) {
-            Some(value) => Some(value.to_owned()),
-            None => None,
-        }
+        self.object
+            .lock()
+            .unwrap()
+            .get(key)
+            .and_then(|v| Some(v.to_owned()))
     }
 
     fn property_slice(&self, key: &str) -> Option<Vec<String>> {
-        match self.object.lock().unwrap().get(key) {
-            Some(value) => Some(
+        self.object.lock().unwrap().get(key).and_then(|value| {
+            Some(
                 strings::Split(value, ",")
                     .iter()
-                    .map(|s| s.to_string())
+                    .map(|x| x.to_string())
                     .collect(),
-            ),
-            None => None,
-        }
+            )
+        })
     }
 
     fn set_property_slice(&mut self, key: &str, values: Vec<String>) {
@@ -289,9 +289,11 @@ impl Settings for Properties {
 
     fn property_names(&self) -> Vec<String> {
         let mut names: Vec<String> = vec![];
-        for (k, _) in self.object.lock().unwrap().iter() {
-            names.push(k.to_owned())
-        }
+        self.object
+            .lock()
+            .unwrap()
+            .iter()
+            .for_each(|(k, _)| names.push(k.to_owned()));
         names
     }
 }
