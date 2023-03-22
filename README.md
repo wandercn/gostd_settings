@@ -5,7 +5,7 @@
 [![GPL3 licensed](https://img.shields.io/github/license/wandercn/gostd_settings.svg)](./LICENSE)
 [![Downloads of Crates.io](https://img.shields.io/crates/d/gostd_settings.svg)](https://crates.io/crates/gostd_settings)
 [![Lines of code](https://img.shields.io/tokei/lines/github/wandercn/gostd_settings.svg)](#)
-[![Build](https://img.shields.io/github/workflow/status/wandercn/gostd_settings/Rust.svg)](#)
+[![Build](https://img.shields.io/github/actions/workflow/status/wandercn/gostd_settings/.github/workflows/rust.yml?branch=master)](#)
 [![Languages](https://img.shields.io/github/languages/top/wandercn/gostd_settings.svg)](#)
 
 gostd_settings is library for reading and writing properties files. 是一个用于读写属性配置文件的库
