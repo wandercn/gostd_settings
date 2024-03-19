@@ -18,4 +18,4 @@ opt-level = 0
 opt-level = 3
 
 [dependencies]
-gostd = "0.3.7"
+gostd = "^0.3"
