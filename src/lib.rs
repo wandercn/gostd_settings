@@ -36,6 +36,7 @@
 #![allow(non_camel_case_types)]
 use gostd::bytes::Buffer;
 use gostd::io::{ByteWriter, StringWriter};
+use gostd::net::url::Values;
 use gostd::strings;
 use std::collections::HashMap;
 use std::fs;
@@ -194,10 +195,8 @@ impl Properties {
         if Self::is_comment_line(line_str) {
             return;
         }
-        let split_strs = strings::Split(line_str, "=");
-        let key = strings::TrimSpace(split_strs[0]);
-        let value = strings::TrimSpace(split_strs[1]);
-        self.set_property(key, value);
+        let (key, value, _) = strings::Cut(line_str, "=");
+        self.set_property(strings::TrimSpace(key), strings::TrimSpace(value));
     }
 
     fn is_comment_line(line: &str) -> bool {
